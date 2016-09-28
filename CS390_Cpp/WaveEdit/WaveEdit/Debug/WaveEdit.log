@@ -1,0 +1,25 @@
+﻿Build started 9/25/2016 2:27:44 PM.
+     1>Project "C:\Users\Snake\Desktop\CS390\CS390_Cpp_Java_Python\CS390-CPP\WaveEdit\WaveEdit\WaveEdit.vcxproj" on node 2 (Build target(s)).
+     1>ClCompile:
+         C:\Program Files (x86)\Microsoft Visual Studio 14.0\VC\bin\CL.exe /c /ZI /nologo /W3 /WX- /sdl /Od /Oy- /D WIN32 /D _WINDOWS /D _DEBUG /D _UNICODE /D UNICODE /D _AFXDLL /Gm /EHsc /RTC1 /MDd /GS /fp:precise /Zc:wchar_t /Zc:forScope /Zc:inline /Yu"stdafx.h" /Fp"Debug\WaveEdit.pch" /Fo"Debug\\" /Fd"Debug\vc140.pdb" /Gd /TP /analyze- /errorReport:prompt WaveEditView.cpp
+         WaveEditView.cpp
+     1>c:\users\snake\desktop\cs390\cs390_cpp_java_python\cs390-cpp\waveedit\waveedit\waveeditview.cpp(129): warning C4244: 'initializing': conversion from 'double' to 'int', possible loss of data
+     1>c:\users\snake\desktop\cs390\cs390_cpp_java_python\cs390-cpp\waveedit\waveedit\waveeditview.cpp(131): warning C4018: '<': signed/unsigned mismatch
+     1>c:\users\snake\desktop\cs390\cs390_cpp_java_python\cs390-cpp\waveedit\waveedit\waveeditview.cpp(135): warning C4244: 'argument': conversion from 'double' to 'int', possible loss of data
+     1>c:\users\snake\desktop\cs390\cs390_cpp_java_python\cs390-cpp\waveedit\waveedit\waveeditview.cpp(135): warning C4244: 'initializing': conversion from 'int' to 'float', possible loss of data
+     1>c:\users\snake\desktop\cs390\cs390_cpp_java_python\cs390-cpp\waveedit\waveedit\waveeditview.cpp(333): warning C4244: 'argument': conversion from 'double' to 'int', possible loss of data
+       Link:
+         C:\Program Files (x86)\Microsoft Visual Studio 14.0\VC\bin\link.exe /ERRORREPORT:PROMPT /OUT:"C:\Users\Snake\Desktop\CS390\CS390_Cpp_Java_Python\CS390-CPP\WaveEdit\Debug\WaveEdit.exe" /INCREMENTAL /NOLOGO winmm.lib /MANIFEST /MANIFESTUAC:"level='asInvoker' uiAccess='false'" /manifest:embed /manifestinput:"C:\Program Files (x86)\Microsoft Visual Studio 14.0\VC\Include\Manifest\dpiaware.manifest" /DEBUG:FASTLINK /PDB:"C:\Users\Snake\Desktop\CS390\CS390_Cpp_Java_Python\CS390-CPP\WaveEdit\Debug\WaveEdit.pdb" /SUBSYSTEM:WINDOWS /TLBID:1 /ENTRY:"wWinMainCRTStartup" /DYNAMICBASE /NXCOMPAT /IMPLIB:"C:\Users\Snake\Desktop\CS390\CS390_Cpp_Java_Python\CS390-CPP\WaveEdit\Debug\WaveEdit.lib" /MACHINE:X86 Debug\WaveEdit.res
+         Debug\ChildFrm.obj
+         Debug\MainFrm.obj
+         Debug\stdafx.obj
+         Debug\WaveEdit.obj
+         Debug\WaveEditDoc.obj
+         Debug\WaveEditView.obj
+         Debug\WaveFile.obj
+         WaveEdit.vcxproj -> C:\Users\Snake\Desktop\CS390\CS390_Cpp_Java_Python\CS390-CPP\WaveEdit\Debug\WaveEdit.exe
+     1>Done Building Project "C:\Users\Snake\Desktop\CS390\CS390_Cpp_Java_Python\CS390-CPP\WaveEdit\WaveEdit\WaveEdit.vcxproj" (Build target(s)).
+
+Build succeeded.
+
+Time Elapsed 00:00:00.72
