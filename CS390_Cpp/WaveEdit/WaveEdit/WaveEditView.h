@@ -3,7 +3,10 @@
 //
 
 #pragma once
+#include <stack>
+#include <string>
 
+using namespace std;
 
 class CWaveEditView : public CScrollView //CView (changed for step #4)
 {
@@ -17,6 +20,13 @@ class CWaveEditView : public CScrollView //CView (changed for step #4)
 protected: // create from serialization only
 	CWaveEditView();
 	DECLARE_DYNCREATE(CWaveEditView)
+	stack<string> undoStack;
+	stack<string>redoStack;
+	void addCommand(string Command);
+	string removeCommand(string Command);
+	void eraseStack();
+	void undo();
+	void redo();
 
 // Attributes
 public:
@@ -64,6 +74,8 @@ public:
 	afx_msg void OnViewZoomin();
 	afx_msg void OnViewZoomout();
 	afx_msg void OnViewView100();
+
+
 };
 
 #ifndef _DEBUG  // debug version in WaveEditView.cpp

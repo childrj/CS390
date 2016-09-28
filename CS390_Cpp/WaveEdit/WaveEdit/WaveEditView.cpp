@@ -40,6 +40,9 @@ BEGIN_MESSAGE_MAP(CWaveEditView, CScrollView)
 	ON_COMMAND(ID_VIEW_ZOOMIN, &CWaveEditView::OnViewZoomin)
 	ON_COMMAND(ID_VIEW_ZOOMOUT, &CWaveEditView::OnViewZoomout)
 	ON_COMMAND(ID_VIEW_VIEW100, &CWaveEditView::OnViewView100)
+	ON_COMMAND(ID_EDIT_UNDO, &CWaveEditView::undo)
+	ON_COMMAND(ID_EDIT_REDO, &CWaveEditView::redo)
+
 END_MESSAGE_MAP()
 
 // CWaveEditView construction/destruction
@@ -56,6 +59,8 @@ CWaveEditView::CWaveEditView()
 
 CWaveEditView::~CWaveEditView()
 {
+	eraseStack();
+
 }
 
 BOOL CWaveEditView::PreCreateWindow(CREATESTRUCT& cs)
@@ -63,7 +68,7 @@ BOOL CWaveEditView::PreCreateWindow(CREATESTRUCT& cs)
 	// TODO: Modify the Window class or styles here by modifying
 	//  the CREATESTRUCT cs
 	
-
+	
 	return CView::PreCreateWindow(cs);
 }
 
@@ -276,6 +281,9 @@ void CWaveEditView::OnEditCut()
 	pApp->clipboard->updateHeader();
 	// Update window
 	this->RedrawWindow();
+	//add properly formatted to undo stack
+	//action(period)start(period)end
+	undoStack.push("cut." + to_string(selectionStart) + "." + to_string(selectionEnd));
 }
 
 void CWaveEditView::OnEditCopy()
@@ -304,7 +312,8 @@ void CWaveEditView::OnEditCopy()
 	//reset variables
 	this->selectionStart = 0;
 	this->selectionEnd = 0;
-
+	//add properly formatted to undo stack
+	undoStack.push("copy." + to_string(selectionStart) + "." + to_string(selectionEnd));
 }
 
 void CWaveEditView::OnEditPaste()
@@ -339,6 +348,8 @@ void CWaveEditView::OnEditPaste()
 	this->selectionEnd = 0;
 	//update the wave graph
 	this->RedrawWindow();
+	//add properly formatted to undo stack
+	undoStack.push("paste." + to_string(selectionStart) + "." + to_string(selectionEnd));
 }
 
 
@@ -350,6 +361,7 @@ void CWaveEditView::OnZoomX1()
 	// TODO: Add your command handler code here
 	this->zoom = 1;
 	RedrawWindow();
+
 }
 
 
@@ -374,6 +386,9 @@ void CWaveEditView::OnViewZoomin()
 	// TODO: Add your command handler code here
 	this->zoom = this->zoom * 2;
 	RedrawWindow();
+
+	//add properly formatted to undo stack
+	undoStack.push("zoomin");
 }
 
 
@@ -382,6 +397,9 @@ void CWaveEditView::OnViewZoomout()
 	// TODO: Add your command handler code here
 	this->zoom = this->zoom / 2;
 	RedrawWindow();
+
+	//add properly formatted to undo stack
+	undoStack.push("zoomout");
 }
 
 
@@ -390,4 +408,180 @@ void CWaveEditView::OnViewView100()
 	// TODO: Add your command handler code here
 	this->zoom = 1;
 	RedrawWindow();
+
+	//add properly formatted to undo stack
+	undoStack.push("zoom100");
+}
+
+//UNDO REDO Section
+void CWaveEditView::eraseStack()
+{
+	while (!undoStack.empty()) {
+		delete &undoStack.top();
+		undoStack.pop();
+	}
+	while (!redoStack.empty()) {
+		delete &redoStack.top();
+		redoStack.pop();
+	}
+
+}
+
+void CWaveEditView::addCommand(string Command) {
+	undoStack.push(Command);
+}
+
+
+void CWaveEditView::undo() {
+	if (undoStack.empty())return;
+	stack<string>temp;
+	
+	//do all this again until figure out how to use same object across classes
+	CWaveEditDoc* pDoc = GetDocument();
+	ASSERT_VALID(pDoc);
+	if (!pDoc)return;
+	//put existing wave file into wave and fail check
+	WaveFile * wave = &pDoc->wave;
+	if (wave->hdr == NULL)return;
+	
+	//move undo action to redo stack;
+	redoStack.push(undoStack.top());
+	//get rid of undo action
+	undoStack.pop();
+	//empty undo stack into temp with reversed order
+	while (!undoStack.empty()) {
+		temp.push(undoStack.top());
+		undoStack.pop();
+	}
+	//undo is now empty, temp is now ready to be executed
+	while (!temp.empty()) {
+		string s = temp.top();//put string in s
+		temp.pop();//remove from temp stack
+		undoStack.push(s);//put it back on undo stack
+		if (s.find("cut")) {
+			 //parse out selection start/end
+			string start = s.substr(3, s.find("."));
+			string end = s.substr(s.find(".", s.length()));
+			this->selectionStart = stoi(start);
+			this->selectionEnd = stoi(end);
+			//do the action
+			CWaveEditView::OnEditCut();
+		}
+		else if (s.find("copy")) {
+			//parse out selection start/end
+			string start = s.substr(4, s.find("."));
+			string end = s.substr(s.find(".", s.length()));
+			this->selectionStart = stoi(start);
+			this->selectionEnd = stoi(end);
+			//do the action
+			CWaveEditView::OnEditCopy();
+		}
+		else if (s.find("paste")) {
+			//parse out selection start/end
+			string start = s.substr(5, s.find("."));
+			string end = s.substr(s.find(".", s.length()));
+			this->selectionStart = stoi(start);
+			this->selectionEnd = stoi(end);
+			//do the action
+			CWaveEditView::OnEditPaste();
+		}
+		else if (s.find("zoomin")) {
+			CWaveEditView::OnViewZoomin();
+		}
+		else if (s.find("zoomout")) {
+			CWaveEditView::OnViewZoomout();
+		}
+		else if (s.find("zoom100")) {
+			CWaveEditView::OnViewView100();
+		}
+		else if (s.find("slowdown")) {
+			WaveFile *slowWave = wave->multiply_freq(0.5, 0);
+			slowWave->play();
+			//modify current wave file
+			*wave = slowWave[0];
+		}
+		else if (s.find("speedup")) {
+			WaveFile * speedWave = wave->multiply_freq(2, 0);
+			speedWave->play();
+			//modify current wave file
+			*wave = speedWave[0];
+		}
+		else if (s.find("echo")) {
+			//make new wav with echo
+			WaveFile * echoWave = wave->echo(0.5, 500);
+			//play it
+			echoWave->play();
+			//modify current wave file
+			*wave = echoWave[0];
+		}
+
+
+	}
+
+
+}
+
+void CWaveEditView::redo() {
+	if (redoStack.empty())return;
+	//do all this again until figure out how to use same object across classes
+	CWaveEditDoc* pDoc = GetDocument();
+	ASSERT_VALID(pDoc);
+	if (!pDoc)return;
+	//put existing wave file into wave and fail check
+	WaveFile * wave = &pDoc->wave;
+	if (wave->hdr == NULL)return;
+
+	//move redo action to undo stack;
+	undoStack.push(redoStack.top());
+	//get rid of redo action
+	string s = redoStack.top();
+	redoStack.pop();
+	if (s.find("cut")) {
+		//parse out selection start/end
+		string start = s.substr(3, s.find("."));
+		string end = s.substr(s.find(".", s.length()));
+		this->selectionStart = stoi(start);
+		this->selectionEnd = stoi(end);
+		//do the action
+		CWaveEditView::OnEditCut();
+	}
+	else if (s.find("paste")) {
+		//parse out selection start/end
+		string start = s.substr(5, s.find("."));
+		string end = s.substr(s.find(".", s.length()));
+		this->selectionStart = stoi(start);
+		this->selectionEnd = stoi(end);
+		//do the action
+		CWaveEditView::OnEditPaste();
+	}
+	else if (s.find("zoomin")) {
+		CWaveEditView::OnViewZoomin();
+	}
+	else if (s.find("zoomout")) {
+		CWaveEditView::OnViewZoomout();
+	}
+	else if (s.find("zoom100")) {
+		CWaveEditView::OnViewView100();
+	}
+	else if (s.find("slowdown")) {
+		WaveFile *slowWave = wave->multiply_freq(0.5, 0);
+		slowWave->play();
+		//modify current wave file
+		*wave = slowWave[0];
+	}
+	else if (s.find("speedup")) {
+		WaveFile * speedWave = wave->multiply_freq(2, 0);
+		speedWave->play();
+		//modify current wave file
+		*wave = speedWave[0];
+	}
+	else if (s.find("echo")) {
+		//make new wav with echo
+		WaveFile * echoWave = wave->echo(0.5, 500);
+		//play it
+		echoWave->play();
+		//modify current wave file
+		*wave = echoWave[0];
+	}
+
 }

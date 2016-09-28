@@ -149,7 +149,7 @@ BEGIN
     END
     POPUP "&Edit"
     BEGIN
-        MENUITEM "&Redo\tCtrl+Shift+Z",         ID_EDIT_REDO32776
+        MENUITEM "&Redo\tCtrl+Shift+Z",         ID_EDIT_REDO
         MENUITEM "&Undo\tCtrl+Z",               ID_EDIT_UNDO
         MENUITEM SEPARATOR
         MENUITEM "Cu&t\tCtrl+X",                ID_EDIT_CUT

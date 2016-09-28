@@ -35,7 +35,7 @@ END_MESSAGE_MAP()
 CWaveEditDoc::CWaveEditDoc()
 {
 	// TODO: add one-time construction code here
-
+	
 }
 
 CWaveEditDoc::~CWaveEditDoc()
@@ -158,14 +158,16 @@ void CWaveEditDoc::OnToolsEcho()
 {
 	// TODO: Add your command handler code here
 
+	//make new wav with echo
 	WaveFile * echoWave = wave.echo(0.5, 500);
+	//play it
 	echoWave->play();
 	//modify current wave file
 	wave = echoWave[0];
 	
 	//added from tutorial
 	//datanew[i] = data[i] + atenuation * data[i - delay];
-
+	
 }
 
 
@@ -196,5 +198,5 @@ void CWaveEditDoc::OnToolsSlowdown()
 	//added from tutorial
 	//datanew[2i] = data[i]
 	//datanew[21+1] = data[i];
-
+	
 }
