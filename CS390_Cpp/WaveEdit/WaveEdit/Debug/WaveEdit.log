@@ -1,17 +1,8 @@
-﻿Build started 9/28/2016 7:38:45 PM.
-     1>Project "C:\Users\Snake\Desktop\git-repositories\CS390\CS390_Cpp\WaveEdit\WaveEdit\WaveEdit.vcxproj" on node 2 (Build target(s)).
-     1>Link:
-         C:\Program Files (x86)\Microsoft Visual Studio 14.0\VC\bin\link.exe /ERRORREPORT:PROMPT /OUT:"C:\Users\Snake\Desktop\git-repositories\CS390\CS390_Cpp\WaveEdit\Debug\WaveEdit.exe" /INCREMENTAL /NOLOGO winmm.lib /MANIFEST /MANIFESTUAC:"level='asInvoker' uiAccess='false'" /manifest:embed /manifestinput:"C:\Program Files (x86)\Microsoft Visual Studio 14.0\VC\Include\Manifest\dpiaware.manifest" /DEBUG:FASTLINK /PDB:"C:\Users\Snake\Desktop\git-repositories\CS390\CS390_Cpp\WaveEdit\Debug\WaveEdit.pdb" /SUBSYSTEM:WINDOWS /TLBID:1 /ENTRY:"wWinMainCRTStartup" /DYNAMICBASE /NXCOMPAT /IMPLIB:"C:\Users\Snake\Desktop\git-repositories\CS390\CS390_Cpp\WaveEdit\Debug\WaveEdit.lib" /MACHINE:X86 Debug\WaveEdit.res
-         Debug\ChildFrm.obj
-         Debug\MainFrm.obj
-         Debug\stdafx.obj
-         Debug\WaveEdit.obj
-         Debug\WaveEditDoc.obj
-         Debug\WaveEditView.obj
-         Debug\WaveFile.obj
-         WaveEdit.vcxproj -> C:\Users\Snake\Desktop\git-repositories\CS390\CS390_Cpp\WaveEdit\Debug\WaveEdit.exe
-     1>Done Building Project "C:\Users\Snake\Desktop\git-repositories\CS390\CS390_Cpp\WaveEdit\WaveEdit\WaveEdit.vcxproj" (Build target(s)).
-
-Build succeeded.
-
-Time Elapsed 00:00:00.73
+﻿  WaveEditView.cpp
+c:\users\joshua\desktop\gitcs390\cs390_cpp\waveedit\waveedit\waveeditview.cpp(134): warning C4244: 'initializing': conversion from 'double' to 'int', possible loss of data
+c:\users\joshua\desktop\gitcs390\cs390_cpp\waveedit\waveedit\waveeditview.cpp(136): warning C4018: '<': signed/unsigned mismatch
+c:\users\joshua\desktop\gitcs390\cs390_cpp\waveedit\waveedit\waveeditview.cpp(140): warning C4244: 'argument': conversion from 'double' to 'int', possible loss of data
+c:\users\joshua\desktop\gitcs390\cs390_cpp\waveedit\waveedit\waveeditview.cpp(140): warning C4244: 'initializing': conversion from 'int' to 'float', possible loss of data
+c:\users\joshua\desktop\gitcs390\cs390_cpp\waveedit\waveedit\waveeditview.cpp(346): warning C4244: 'argument': conversion from 'double' to 'int', possible loss of data
+  WaveEdit.vcxproj -> C:\Users\Joshua\Desktop\gitCS390\CS390_Cpp\WaveEdit\Debug\WaveEdit.exe
+  WaveEdit.vcxproj -> C:\Users\Joshua\Desktop\gitCS390\CS390_Cpp\WaveEdit\Debug\WaveEdit.pdb (Partial PDB)
