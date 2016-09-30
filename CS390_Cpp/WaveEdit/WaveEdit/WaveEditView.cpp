@@ -42,7 +42,7 @@ BEGIN_MESSAGE_MAP(CWaveEditView, CScrollView)
 	ON_COMMAND(ID_VIEW_VIEW100, &CWaveEditView::OnViewView100)
 	ON_COMMAND(ID_EDIT_UNDO, &CWaveEditView::undo)
 	ON_COMMAND(ID_EDIT_REDO, &CWaveEditView::redo)
-
+	ON_COMMAND(ID_TOOLS_PLAYBACKWARDS, &CWaveEditView::OnToolsPlaybackwards)
 END_MESSAGE_MAP()
 
 // CWaveEditView construction/destruction
@@ -73,9 +73,10 @@ BOOL CWaveEditView::PreCreateWindow(CREATESTRUCT& cs)
 }
 
 // CWaveEditView drawing
-
+WaveFile* originalWaveFile;
 void CWaveEditView::OnDraw(CDC* pDC)
 {
+	count++;
 	CWaveEditDoc* pDoc = GetDocument();
 	ASSERT_VALID(pDoc);
 	if (!pDoc)
@@ -103,6 +104,9 @@ void CWaveEditView::OnDraw(CDC* pDC)
 	if (wave->hdr == NULL) {
 		return;
 	}
+
+	if (count == 1)this->originalWave = wave;
+
 	// Get dimensions of the window.
 	//CRect rect;
 	//GetClientRect(rect);
@@ -114,22 +118,11 @@ void CWaveEditView::OnDraw(CDC* pDC)
 	CBrush brush2(color);
 	pDC->SelectObject(&brush2);
 
-	/*
-	if (selectionStart == selectionEnd){
-		pDC->MoveTo(0, 0);
-		pDC->FillSolidRect(selectionStart, 0, 1, rect.Height(), RGB(0, 0, 0));
-	}
-	else {
-		pDC->MoveTo(0, 0);
-		pDC->FillSolidRect(selectionStart, 0, selectionEnd-selectionStart, rect.Height(), RGB(0, 100, 255));
-	}
-	*/
-	
 	// Draw the wave
 	pDC->MoveTo(0, 0);
 	unsigned int x;
 	//for (x = 0; x < rect.Width(); x++) {
-	int scale = wave->lastSample / rect.Width();//1000 samples / 1000 width = scale of1
+	scale = wave->lastSample / rect.Width();//1000 samples / 1000 width = scale of1
 	//get scale of samples vs rect width		//1000 samples / 10000 width = scale of 1/10
 	int wavZoom = (zoom * wave->lastSample) / scale;
 	//z*w->ls gives a larger sample count, divide by scale to normalize
@@ -161,6 +154,7 @@ void CWaveEditView::OnInitialUpdate()
 	//sizeTotal.cx = 10000;
 	//sizeTotal.cy = 10000;
 	SetScrollSizes(MM_TEXT, sizeTotal);
+	
 
 }
 
@@ -273,19 +267,21 @@ void CWaveEditView::OnEditCut()
 	WaveFile * w2 = wave->remove_fragment(startms, endms);
 	// Substitute old wave with new one
 	pDoc->wave = *w2;
+	
+	//add properly formatted to undo stack
+	//action(period)start(period)end
+	addCommand("cut." + to_string(selectionStart) + "." + to_string(selectionEnd));
 	//clear the variables
-
+	this->selectionStart = 0;
+	this->selectionEnd = 0;
 	//update headers of wave and clipboard
 	wave->updateHeader();
 	pApp->clipboard->updateHeader();
 	// Update window
 	this->RedrawWindow();
-	//add properly formatted to undo stack
-	//action(period)start(period)end
-	addCommand("cut." + to_string(selectionStart) + "." + to_string(selectionEnd));
 
-	this->selectionStart = 0;
-	this->selectionEnd = 0;
+
+
 }
 
 void CWaveEditView::OnEditCopy()
@@ -442,14 +438,14 @@ void CWaveEditView::undo() {
 	if (undoStack.empty())return;
 	stack<string>temp;
 	
-	//do all this again until figure out how to use same object across classes
 	CWaveEditDoc* pDoc = GetDocument();
 	ASSERT_VALID(pDoc);
-	if (!pDoc)return;
+	if (!pDoc)
+		return;
 	//put existing wave file into wave and fail check
 	WaveFile * wave = &pDoc->wave;
 	if (wave->hdr == NULL)return;
-	
+
 	//move undo action to redo stack;
 	redoStack.push(undoStack.top());
 	//get rid of undo action
@@ -459,6 +455,9 @@ void CWaveEditView::undo() {
 		temp.push(undoStack.top());
 		undoStack.pop();
 	}
+	//Make a new copy of the file as it originally was
+	wave = originalWave;
+	/////////////////////////////////////////////////
 	//undo is now empty, temp is now ready to be executed
 	while (!temp.empty()) {
 		string s = temp.top();//put string in s
@@ -506,13 +505,13 @@ void CWaveEditView::undo() {
 		}
 		else if (s.find("slowdown") == 0) {
 			WaveFile *slowWave = wave->multiply_freq(0.5, 0);
-			slowWave->play();
+			//slowWave->play();
 			//modify current wave file
 			*wave = slowWave[0];
 		}
 		else if (s.find("speedup") == 0) {
 			WaveFile * speedWave = wave->multiply_freq(2, 0);
-			speedWave->play();
+			//speedWave->play();
 			//modify current wave file
 			*wave = speedWave[0];
 		}
@@ -520,7 +519,7 @@ void CWaveEditView::undo() {
 			//make new wav with echo
 			WaveFile * echoWave = wave->echo(0.5, 500);
 			//play it
-			echoWave->play();
+			//echoWave->play();
 			//modify current wave file
 			*wave = echoWave[0];
 		}
@@ -606,4 +605,57 @@ void CWaveEditView::redo() {
 		*wave = echoWave[0];
 	}
 	RedrawWindow();
+}
+
+
+
+void CWaveEditView::OnToolsPlaybackwards()
+{
+	// TODO: Add your command handler code here
+		CWaveEditDoc* pDoc = GetDocument();
+
+		ASSERT_VALID(pDoc);
+		if (!pDoc)
+			return;
+
+		WaveFile * w2 = &pDoc->wave;
+
+		if (w2->hdr == NULL) {
+			return;
+		}
+
+		// Get dimensions of the window.
+		CRect rect;
+		GetClientRect(rect);
+
+		int width = (w2->maxSamples / w2->sampleRate) * scale; //Samplerate * (pixSecond/framerate)
+
+		double startms = (1000.0 * w2->lastSample / w2->sampleRate) * this->selectionStart / width;
+		double endms = (1000.0 * w2->lastSample / w2->sampleRate) * this->selectionEnd / width;
+
+		if (startms == endms) {
+			w2 = w2->reverse();
+			w2->updateHeader();
+			pDoc->wave = *w2;
+		}
+		else {
+			WaveFile * edit = new WaveFile(w2->numChannels, w2->sampleRate, w2->bitsPerSample);
+			edit = w2->get_fragment(startms, endms);
+			edit->updateHeader();
+			edit = edit->reverse();
+			edit->updateHeader();
+
+			w2 = w2->replace_fragment(startms, endms, edit);
+			w2->updateHeader();
+			pDoc->wave = *w2;
+		}
+
+		this->selectionStart = 0;
+		this->selectionEnd = 0;
+
+		this->RedrawWindow();
+
+
+	
+
 }

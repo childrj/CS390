@@ -84,6 +84,6 @@ public:
 	WaveFile * remove_fragment(double begin, double end);
 	//insert specified fragment of wavefile at specified position
 	WaveFile * insert_fragment(int startMs, WaveFile * clipping);
-
-
+	WaveFile * reverse();
+	WaveFile * replace_fragment(int startMs, int endMs, WaveFile * clipping);
 };

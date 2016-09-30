@@ -1,8 +1,9 @@
 ﻿  WaveEditView.cpp
-c:\users\joshua\desktop\gitcs390\cs390_cpp\waveedit\waveedit\waveeditview.cpp(134): warning C4244: 'initializing': conversion from 'double' to 'int', possible loss of data
-c:\users\joshua\desktop\gitcs390\cs390_cpp\waveedit\waveedit\waveeditview.cpp(136): warning C4018: '<': signed/unsigned mismatch
-c:\users\joshua\desktop\gitcs390\cs390_cpp\waveedit\waveedit\waveeditview.cpp(140): warning C4244: 'argument': conversion from 'double' to 'int', possible loss of data
-c:\users\joshua\desktop\gitcs390\cs390_cpp\waveedit\waveedit\waveeditview.cpp(140): warning C4244: 'initializing': conversion from 'int' to 'float', possible loss of data
-c:\users\joshua\desktop\gitcs390\cs390_cpp\waveedit\waveedit\waveeditview.cpp(346): warning C4244: 'argument': conversion from 'double' to 'int', possible loss of data
+c:\users\joshua\desktop\gitcs390\cs390_cpp\waveedit\waveedit\waveeditview.cpp(127): warning C4244: 'initializing': conversion from 'double' to 'int', possible loss of data
+c:\users\joshua\desktop\gitcs390\cs390_cpp\waveedit\waveedit\waveeditview.cpp(129): warning C4018: '<': signed/unsigned mismatch
+c:\users\joshua\desktop\gitcs390\cs390_cpp\waveedit\waveedit\waveeditview.cpp(133): warning C4244: 'argument': conversion from 'double' to 'int', possible loss of data
+c:\users\joshua\desktop\gitcs390\cs390_cpp\waveedit\waveedit\waveeditview.cpp(133): warning C4244: 'initializing': conversion from 'int' to 'float', possible loss of data
+c:\users\joshua\desktop\gitcs390\cs390_cpp\waveedit\waveedit\waveeditview.cpp(342): warning C4244: 'argument': conversion from 'double' to 'int', possible loss of data
+c:\users\joshua\desktop\gitcs390\cs390_cpp\waveedit\waveedit\waveeditview.cpp(648): warning C4244: 'argument': conversion from 'double' to 'int', possible loss of data
   WaveEdit.vcxproj -> C:\Users\Joshua\Desktop\gitCS390\CS390_Cpp\WaveEdit\Debug\WaveEdit.exe
   WaveEdit.vcxproj -> C:\Users\Joshua\Desktop\gitCS390\CS390_Cpp\WaveEdit\Debug\WaveEdit.pdb (Partial PDB)

@@ -312,3 +312,38 @@ WaveFile::insert_fragment(int begin, WaveFile * clipboard)
 
 	return wave;
 }
+
+WaveFile *
+WaveFile::replace_fragment(int startMs, int endMs, WaveFile * clipping)
+{
+	WaveFile * newWave = new WaveFile(numChannels, sampleRate, bitsPerSample);
+
+	for (int a = 0; a < (startMs * (this->sampleRate / 1000)); a++) {
+		newWave->add_sample(this->get_sample(a));
+	}
+
+	for (int b = 0; b < clipping->lastSample; b++) {
+		newWave->add_sample(clipping->get_sample(b));
+	}
+
+	for (int c = (endMs * (this->sampleRate / 1000)); c < this->lastSample; c++) {
+		newWave->add_sample(this->get_sample(c));
+	}
+
+	return newWave;
+}
+
+WaveFile *
+WaveFile::reverse()
+{
+	WaveFile * newWave = new WaveFile(numChannels, sampleRate, bitsPerSample);
+
+	for (int x = this->lastSample; x > 0; x--) {
+		newWave->add_sample(this->get_sample(x));
+	}
+
+	return newWave;
+}
+
+
+

@@ -16,6 +16,10 @@ class CWaveEditView : public CScrollView //CView (changed for step #4)
 	int selectionStart; // Selected sample start
 	int selectionEnd; // Selected sample end
 	double zoom;			//zoom level, default 1
+	int count = 0;
+	int scale;
+public:
+	WaveFile* originalWave;
 
 protected: // create from serialization only
 	CWaveEditView();
@@ -27,6 +31,7 @@ protected: // create from serialization only
 	void eraseStack();
 	void undo();
 	void redo();
+	void getpDC();
 
 // Attributes
 public:
@@ -76,6 +81,7 @@ public:
 	afx_msg void OnViewView100();
 
 
+	afx_msg void OnToolsPlaybackwards();
 };
 
 #ifndef _DEBUG  // debug version in WaveEditView.cpp
