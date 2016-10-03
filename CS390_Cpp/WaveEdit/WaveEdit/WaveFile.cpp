@@ -17,6 +17,9 @@
 #include "mmsystem.h"
 #include "assert.h"
 #include "math.h"
+//#include "WaveEditView.h"
+//#include "Globals.h"
+
 static void
 assignLittleEndian4(unsigned char * dest, unsigned int value) {
 	dest[0] = value & 0xFF;
@@ -107,6 +110,12 @@ WaveFile::read(CFile * f)
 	if (bitsPerSample != 16) {
 		return false;
 	}
+	//Globals::originalWave = new WaveFile(numChannels, sampleRate, bitsPerSample);
+	//WaveFile * originalWave = new WaveFile(numChannels, sampleRate, bitsPerSample);
+	//Globals::originalWave->lastSample = this->lastSample;
+	//Globals::originalWave->updateHeader();
+	//CWaveEditView::addCommand("original", 0, 0, originalWave);
+	
 	return true;
 }
 // Play wave file.
@@ -199,11 +208,36 @@ WaveFile::tone(int frequency, int msecs) {
 	}
 }
 // Create a new wave file that is k times the frequencyrate of the original
+/*
+WaveFile *
+WaveFile::multiply_freq(double k, double t, int durationms)
+{
+	WaveFile * w2 = new WaveFile(numChannels, sampleRate, bitsPerSample);
+	int maxSamples = durationms * sampleRate / 1000;
+	int i = 0;
+	if (k != 0) {
+		// Multiply samples in w up to this duration
+		//double t = 0;
+		while (t < lastSample && (durationms == 0 || i < maxSamples)) {
+			int value = get_sample((int)t);
+			w2->add_sample(value);
+			t = t + k;
+			i++;
+		}
+	}
+	// Put silence in this duration
+	for (; i<maxSamples; i++) {
+		w2->add_sample(0);
+	}
+	// Write wav header
+	w2->updateHeader();
+	return w2;
+}*/
+// Create a new wave file that is k times the frequencyrate of the original
 WaveFile *
 WaveFile::multiply_freq(double k, int durationms)
 {
-	WaveFile * w2 = new WaveFile(numChannels, sampleRate,
-		bitsPerSample);
+	WaveFile * w2 = new WaveFile(numChannels, sampleRate, bitsPerSample);
 	int maxSamples = durationms * sampleRate / 1000;
 	int i = 0;
 	if (k != 0) {
@@ -224,6 +258,34 @@ WaveFile::multiply_freq(double k, int durationms)
 	w2->updateHeader();
 	return w2;
 }
+
+// Create a new wave file that is k times the frequencyrate of the original
+WaveFile *
+WaveFile::multiply_freq(double k, int begin, int end)
+{
+	WaveFile * w2 = new WaveFile(numChannels, sampleRate, bitsPerSample);
+	if (begin == end) {
+		begin = 0;
+		end = lastSample;
+	}
+	double i = 0;
+	if (k != 0) {
+		for (i = 0; i < begin; i++) {
+			w2->add_sample(get_sample((int)i));
+		}
+		while (i < end) {
+			w2->add_sample(get_sample((int)i));
+			i += k;
+		}
+		while (i < lastSample) {
+			w2->add_sample(get_sample((int)i));
+			i++;
+		}
+	}
+	w2->updateHeader();
+	return w2;
+}
+
 // Append a wave file src to the end of this wave file.
 void
 WaveFile::append_wave(WaveFile * src) {
@@ -345,5 +407,10 @@ WaveFile::reverse()
 	return newWave;
 }
 
+void
+WaveFile::stop()
+{
+	PlaySoundW(NULL, 0, 0);
+}
 
 

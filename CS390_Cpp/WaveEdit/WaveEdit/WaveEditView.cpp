@@ -34,15 +34,18 @@ BEGIN_MESSAGE_MAP(CWaveEditView, CScrollView)
 	ON_COMMAND(ID_EDIT_CUT, &CWaveEditView::OnEditCut)
 	ON_COMMAND(ID_EDIT_PASTE, &CWaveEditView::OnEditPaste)
 	ON_COMMAND(ID_EDIT_COPY, &CWaveEditView::OnEditCopy)
-	ON_COMMAND(ID_ZOOM_X1, &CWaveEditView::OnZoomX1)
-	ON_COMMAND(ID_ZOOM_2X, &CWaveEditView::OnZoom2x)
-	ON_COMMAND(ID_ZOOM_3X, &CWaveEditView::OnZoom3x)
 	ON_COMMAND(ID_VIEW_ZOOMIN, &CWaveEditView::OnViewZoomin)
 	ON_COMMAND(ID_VIEW_ZOOMOUT, &CWaveEditView::OnViewZoomout)
 	ON_COMMAND(ID_VIEW_VIEW100, &CWaveEditView::OnViewView100)
 	ON_COMMAND(ID_EDIT_UNDO, &CWaveEditView::undo)
 	ON_COMMAND(ID_EDIT_REDO, &CWaveEditView::redo)
 	ON_COMMAND(ID_TOOLS_PLAYBACKWARDS, &CWaveEditView::OnToolsPlaybackwards)
+	ON_COMMAND(ID_TOOLS_SLOWDOWN, &CWaveEditView::OnToolsSlowdown)
+	ON_COMMAND(ID_TOOLS_ECHO, &CWaveEditView::OnToolsEcho)
+	ON_COMMAND(ID_TOOLS_SPEEDUP, &CWaveEditView::OnToolsSpeedup)
+
+	ON_COMMAND(ID_TOOLS_HYPERSPEED, &CWaveEditView::OnToolsHyperspeed)
+	ON_COMMAND(ID_TOOLS_TURTLESLOW, &CWaveEditView::OnToolsTurtleslow)
 END_MESSAGE_MAP()
 
 // CWaveEditView construction/destruction
@@ -54,33 +57,28 @@ CWaveEditView::CWaveEditView()
 	selectionStart = 0;
 	selectionEnd = 0;
 	zoom = 1;
-
 }
 
 CWaveEditView::~CWaveEditView()
 {
-	eraseStack();
-
+	//eraseStack();
 }
 
 BOOL CWaveEditView::PreCreateWindow(CREATESTRUCT& cs)
 {
 	// TODO: Modify the Window class or styles here by modifying
 	//  the CREATESTRUCT cs
-	
-	
 	return CView::PreCreateWindow(cs);
 }
 
 // CWaveEditView drawing
-WaveFile* originalWaveFile;
+
 void CWaveEditView::OnDraw(CDC* pDC)
 {
-	count++;
+	//count++;
 	CWaveEditDoc* pDoc = GetDocument();
 	ASSERT_VALID(pDoc);
-	if (!pDoc)
-		return;
+	if (!pDoc) return;
 	//Draw Selection///////////////////////////////
 	
 	// Get dimensions of the window.
@@ -94,18 +92,29 @@ void CWaveEditView::OnDraw(CDC* pDC)
 	CBrush brush1(color);
 	pDC->SelectObject(&brush1);
 	// Draw selection if any
-	if (selectionStart != selectionEnd) {
-		pDC->Rectangle(selectionStart, 0, selectionEnd, rect.Height());
+	//if (selectionStart != selectionEnd) {
+	//	pDC->Rectangle(selectionStart, 0, selectionEnd, rect.Height());
+	//}
+	if (selectionStart == selectionEnd) {
+		pDC->MoveTo(0, 0);
+		pDC->FillSolidRect(selectionStart, 0, 1, rect.Height(), RGB(0, 0, 0));
 	}
+	//Fill the selection rectangle
+	else {
+		pDC->MoveTo(0, 0);
+		pDC->FillSolidRect(selectionStart, 0, selectionEnd - selectionStart, rect.Height(), RGB(0, 100, 255));
+	}
+	
+	
 	//End Draw Selection/////////////////////////////////
 	
 	// TODO: add draw code for native data here
-	WaveFile * wave = &pDoc->wave;
+	WaveFile * wave = pDoc->wave;
 	if (wave->hdr == NULL) {
 		return;
 	}
 
-	if (count == 1)this->originalWave = wave;
+	//if (count == 1)this->originalWave = wave;
 
 	// Get dimensions of the window.
 	//CRect rect;
@@ -154,6 +163,7 @@ void CWaveEditView::OnInitialUpdate()
 	//sizeTotal.cx = 10000;
 	//sizeTotal.cy = 10000;
 	SetScrollSizes(MM_TEXT, sizeTotal);
+
 	
 
 }
@@ -199,8 +209,6 @@ CWaveEditDoc* CWaveEditView::GetDocument() const // non-debug version is inline
 
 
 // CWaveEditView message handlers
-
-
 void CWaveEditView::OnLButtonDown(UINT nFlags, CPoint point)
 {
 	// TODO: Add your message handler code here and/or call default
@@ -210,7 +218,6 @@ void CWaveEditView::OnLButtonDown(UINT nFlags, CPoint point)
 	
 	CScrollView::OnLButtonDown(nFlags, point);
 }
-
 
 void CWaveEditView::OnLButtonUp(UINT nFlags, CPoint point)
 {
@@ -226,7 +233,6 @@ void CWaveEditView::OnLButtonUp(UINT nFlags, CPoint point)
 	CScrollView::OnLButtonUp(nFlags, point);
 }
 
-
 void CWaveEditView::OnMouseMove(UINT nFlags, CPoint point)
 {
 	// TODO: Add your message handler code here and/or call default
@@ -239,7 +245,6 @@ void CWaveEditView::OnMouseMove(UINT nFlags, CPoint point)
 	}
 }
 
-
 void CWaveEditView::OnEditCut()
 {
 	//get document(the file) and fail check
@@ -247,7 +252,7 @@ void CWaveEditView::OnEditCut()
 	ASSERT_VALID(pDoc);
 	if (!pDoc)return;
 	//make a new wave pointer and set it to the wave just loaded then failcheck
-	WaveFile * wave = &pDoc->wave;
+	WaveFile * wave = pDoc->wave;
 	if (wave->hdr == NULL)return;
 	//dynamic cast pApp as persistent clipboard, then clear it out with new, then fail check
 	CWaveEditApp* pApp = dynamic_cast<CWaveEditApp*>(AfxGetApp());
@@ -265,12 +270,13 @@ void CWaveEditView::OnEditCut()
 	pApp->clipboard = wave->get_fragment(startms, endms);
 	// Remove the fragment
 	WaveFile * w2 = wave->remove_fragment(startms, endms);
+
+	//add properly formattedinfo inside struct to undo stack
+	addCommand("cut", selectionStart, selectionEnd, wave);
 	// Substitute old wave with new one
-	pDoc->wave = *w2;
-	
-	//add properly formatted to undo stack
-	//action(period)start(period)end
-	addCommand("cut." + to_string(selectionStart) + "." + to_string(selectionEnd));
+	w2->updateHeader();
+	pDoc->wave = w2;
+
 	//clear the variables
 	this->selectionStart = 0;
 	this->selectionEnd = 0;
@@ -291,7 +297,7 @@ void CWaveEditView::OnEditCopy()
 	ASSERT_VALID(pDoc);
 	if (!pDoc)return;
 	//pointer to document wave file and fail check
-	WaveFile * wave = &pDoc->wave;
+	WaveFile * wave = pDoc->wave;
 	if (wave->hdr == NULL)return;
 	//make a persistent clipboard pointer and clear it as new
 	CWaveEditApp* pApp = dynamic_cast<CWaveEditApp*>(AfxGetApp());
@@ -310,7 +316,7 @@ void CWaveEditView::OnEditCopy()
 	//reset variables
 
 	//add properly formatted to undo stack
-	addCommand("copy." + to_string(selectionStart) + "." + to_string(selectionEnd));
+	addCommand("copy", selectionStart, selectionEnd, wave);
 
 	this->selectionStart = 0;
 	this->selectionEnd = 0;
@@ -323,7 +329,7 @@ void CWaveEditView::OnEditPaste()
 	ASSERT_VALID(pDoc);
 	if (!pDoc)return;
 	//put existing wave file into wave and fail check
-	WaveFile * wave = &pDoc->wave;
+	WaveFile * wave = pDoc->wave;
 	if (wave->hdr == NULL)return;
 	//dynamic cast pApp as clipboard, DON'T make it new, then fail check
 	CWaveEditApp* pApp = dynamic_cast<CWaveEditApp*>(AfxGetApp());
@@ -340,79 +346,71 @@ void CWaveEditView::OnEditPaste()
 	wave->remove_fragment(startms, endms);
 	// insert the fragment from clipboard at start of selection
 	WaveFile * w2 = wave->insert_fragment(startms, pApp->clipboard);
+
+	//add properly formatted to undo stack
+	addCommand("paste", selectionStart, selectionEnd, wave);
 	// Substitute old wave with new one and updat header
-	pDoc->wave = *w2;
-	wave->updateHeader();
+	w2->updateHeader();
+	pDoc->wave = w2;
+	(pDoc->wave)->updateHeader();
 	//reset start/end variables
 
 	//update the wave graph
 	this->RedrawWindow();
-	//add properly formatted to undo stack
-	addCommand("paste." + to_string(selectionStart) + "." + to_string(selectionEnd));
-
 	this->selectionStart = 0;
 	this->selectionEnd = 0;
 }
 
-
-
-
-
-void CWaveEditView::OnZoomX1()
-{
-	// TODO: Add your command handler code here
-	this->zoom = 1;
-	RedrawWindow();
-
-}
-
-
-void CWaveEditView::OnZoom2x()
-{
-	// TODO: Add your command handler code here
-	this->zoom = 2;
-	RedrawWindow();
-}
-
-
-void CWaveEditView::OnZoom3x()
-{
-	// TODO: Add your command handler code here
-	this->zoom = 3;
-	RedrawWindow();
-}
-
-
 void CWaveEditView::OnViewZoomin()
 {
 	// TODO: Add your command handler code here
-	this->zoom = this->zoom * 2;
-	RedrawWindow();
+	//get document(the file) and fail check
+	CWaveEditDoc* pDoc = GetDocument();
+	ASSERT_VALID(pDoc);
+	if (!pDoc)return;
+	//make a new wave pointer and set it to the wave just loaded then failcheck
+	WaveFile * wave = pDoc->wave;
+	if (wave->hdr == NULL)return;
 
 	//add properly formatted to undo stack
-	undoStack.push("zoomin");
-}
+	addCommand("zoomin", 0, 0, wave);
 
+	this->zoom = this->zoom * 2;
+	RedrawWindow();
+}
 
 void CWaveEditView::OnViewZoomout()
 {
 	// TODO: Add your command handler code here
+	//get document(the file) and fail check
+	CWaveEditDoc* pDoc = GetDocument();
+	ASSERT_VALID(pDoc);
+	if (!pDoc)return;
+	//make a new wave pointer and set it to the wave just loaded then failcheck
+	WaveFile * wave = pDoc->wave;
+	if (wave->hdr == NULL)return;
+	//add properly formatted to undo stack
+	addCommand("zoomout", 0, 0, wave);
+
 	this->zoom = this->zoom / 2;
 	RedrawWindow();
-
-	//add properly formatted to undo stack
-	addCommand("zoomout");
 }
-
 
 void CWaveEditView::OnViewView100()
 {
 	// TODO: Add your command handler code here
+	//get document(the file) and fail check
+	CWaveEditDoc* pDoc = GetDocument();
+	ASSERT_VALID(pDoc);
+	if (!pDoc)return;
+	//make a new wave pointer and set it to the wave just loaded then failcheck
+	WaveFile * wave = pDoc->wave;
+	if (wave->hdr == NULL)return;
+	//add properly formatted to undo stack
+	addCommand("zoom100", 0, 0, wave);
+
 	this->zoom = 1;
 	RedrawWindow();
-
-	//add properly formatted to undo stack
-	addCommand("zoom100");
 }
 
 //UNDO REDO Section
@@ -429,174 +427,213 @@ void CWaveEditView::eraseStack()
 
 }
 
-void CWaveEditView::addCommand(string Command) {
-	undoStack.push(Command);
+void CWaveEditView::addCommand(string command, int commandStart, int commandEnd, WaveFile * commandWaveSection) {
+	//fill the struct
+	CWaveEditDoc::Command cmd;
+	cmd.cmd = command;
+	cmd.cmdStart = commandStart;
+	cmd.cmdEnd = commandEnd;
+	cmd.waveSection = commandWaveSection;
+	//push it on to stack
+	undoStack.push(cmd);
 }
 
-
 void CWaveEditView::undo() {
+	//if empty
 	if (undoStack.empty())return;
-	stack<string>temp;
-	
+	//temp stack for swap
+	stack<CWaveEditDoc::Command>temp;
+	//get document(the file) and fail check
 	CWaveEditDoc* pDoc = GetDocument();
 	ASSERT_VALID(pDoc);
-	if (!pDoc)
-		return;
-	//put existing wave file into wave and fail check
-	WaveFile * wave = &pDoc->wave;
-	if (wave->hdr == NULL)return;
-
-	//move undo action to redo stack;
-	redoStack.push(undoStack.top());
-	//get rid of undo action
-	//undoStack.pop();
-	//empty undo stack into temp with reversed order
-	while (!undoStack.empty()) {
-		temp.push(undoStack.top());
+	if (!pDoc)return;
+	//get rid of action to be undone
+	zoom = 1;
+	//first check if there is only one action
+	if (undoStack.size() == 1) {
+		CWaveEditDoc::Command popCmd = undoStack.top();
+		//get info
+		WaveFile * waveStart = popCmd.waveSection;
+		redoStack.push(undoStack.top());
 		undoStack.pop();
+		//Make a new copy of the file as it originally was
+		pDoc->wave = waveStart;
+		pDoc->wave->updateHeader();
+		this->RedrawWindow();
 	}
-	//Make a new copy of the file as it originally was
-	wave = originalWave;
-	/////////////////////////////////////////////////
-	//undo is now empty, temp is now ready to be executed
-	while (!temp.empty()) {
-		string s = temp.top();//put string in s
-		temp.pop();//remove from temp stack
-		undoStack.push(s);//put it back on undo stack
-		if (s.find("cut")==0) {
-			 //parse out selection start/end
-			string test = s;
-			s = s.substr(4, s.length());
-			int i = s.find(".");
-			string start = s.substr(0, i);
-			s = s.substr(i+1, s.length());
-			string end = s;
-			this->selectionStart = stoi(start);
-			this->selectionEnd = stoi(end);
-			//do the action
-			CWaveEditView::OnEditCut();
+	else //more than one
+	{
+		//drop action to be undone
+		redoStack.push(undoStack.top());
+		undoStack.pop();
+		//empty undo stack into temp with reversed order
+		while (!undoStack.empty()) {
+			temp.push(undoStack.top());
+			undoStack.pop();
 		}
-		else if (s.find("copy") == 0) {
-			//parse out selection start/end
-			string start = s.substr(4, s.find("."));
-			string end = s.substr(s.find("."+start + "."), s.length());
-			this->selectionStart = stoi(start);
-			this->selectionEnd = stoi(end);
-			//do the action
-			CWaveEditView::OnEditCopy();
-		}
-		else if (s.find("paste") == 0) {
-			//parse out selection start/end
-			string start = s.substr(5, s.find("."));
-			string end = s.substr(s.find("." + start + "."), s.length());
-			this->selectionStart = stoi(start);
-			this->selectionEnd = stoi(end);
-			//do the action
-			CWaveEditView::OnEditPaste();
-		}
-		else if (s.find("zoomin") == 0) {
-			CWaveEditView::OnViewZoomin();
-		}
-		else if (s.find("zoomout") == 0) {
-			CWaveEditView::OnViewZoomout();
-		}
-		else if (s.find("zoom100") == 0) {
-			CWaveEditView::OnViewView100();
-		}
-		else if (s.find("slowdown") == 0) {
-			WaveFile *slowWave = wave->multiply_freq(0.5, 0);
-			//slowWave->play();
-			//modify current wave file
-			*wave = slowWave[0];
-		}
-		else if (s.find("speedup") == 0) {
-			WaveFile * speedWave = wave->multiply_freq(2, 0);
-			//speedWave->play();
-			//modify current wave file
-			*wave = speedWave[0];
-		}
-		else if (s.find("echo") == 0) {
-			//make new wav with echo
-			WaveFile * echoWave = wave->echo(0.5, 500);
-			//play it
-			//echoWave->play();
-			//modify current wave file
-			*wave = echoWave[0];
-		}
-		else {
-			throw invalid_argument("received invalid string");
-		}
+		//do first action here to redraw wave
+		//get top struct
+		CWaveEditDoc::Command popCmd = temp.top();
+		//get info
+		string cmd = popCmd.cmd;
+		int start = popCmd.cmdStart;
+		int end = popCmd.cmdEnd;
+		WaveFile * wavePiece = popCmd.waveSection;
+		temp.pop();
+		//Make a new copy of the file as it originally was
+		pDoc->wave = wavePiece;
+		pDoc->wave->updateHeader();
+		/////////////////////////////////////////////////
+		//undo is now empty, temp is now ready to be executed
+		while (!temp.empty()) {
+			//get top struct
+			CWaveEditDoc::Command popCmd = temp.top();
+			//get info
+			string cmd = popCmd.cmd;
+			int start = popCmd.cmdStart;
+			int end = popCmd.cmdEnd;
+			WaveFile * wavePiece = popCmd.waveSection;
+			//remove from temp stack
+			temp.pop();
+			undoStack.push(popCmd);//put it back on undo stack
+			if (cmd == "cut") {
+				 //parse out selection start/end
+				this->selectionStart = start;
+				this->selectionEnd = end;
+				//do the action
+				CWaveEditView::OnEditCut();
+			}
+			else if (cmd == "copy") {
+				//parse out selection start/end
+				this->selectionStart = start;
+				this->selectionEnd = end;
+				//do the action
+				CWaveEditView::OnEditCopy();
+			}
+			else if (cmd == "paste") {
+				this->selectionStart = start;
+				this->selectionEnd = end;
+				//do the action
+				CWaveEditView::OnEditPaste();
+			}
+			else if (cmd == "zoomin") {
+				CWaveEditView::OnViewZoomin();
+			}
+			else if (cmd == "zoomout") {
+				CWaveEditView::OnViewZoomout();
+			}
+			else if (cmd == "zoom100" ) {
+				CWaveEditView::OnViewView100();
+			}
+			else if (cmd == "slowdown" ) {
+				WaveFile *slowWave = (pDoc->wave)->multiply_freq(0.5, 0);
+				//slowWave->play();
+				//modify current wave file
+				pDoc->wave = slowWave;
+			}
+			else if (cmd == "slowdownPart") {
+				WaveFile *slowWave = (pDoc->wave)->multiply_freq(0.5, selectionStart, selectionEnd);
+				//slowWave->play();
+				//modify current wave file
+				pDoc->wave = slowWave;
+			}
+			else if (cmd == "speedup") {
+				WaveFile * speedWave = (pDoc->wave)->multiply_freq(2, (double)start, end - start);
+				//speedWave->play();
+				//modify current wave file
+				pDoc->wave = &speedWave[0];
+			}
+			else if (cmd == "echo") {
+				//make new wav with echo
+				WaveFile * echoWave = (pDoc->wave)->echo(0.5, 500);
+				//play it
+				//echoWave->play();
+				//modify current wave file
+				pDoc->wave = &echoWave[0];
+			}
+			else if (cmd == "playBackwards") {
+				//parse out selection start/end
+				this->selectionStart = start;
+				this->selectionEnd = end;
+				//do the action
+				CWaveEditView::OnToolsPlaybackwards();
+			}
+			else {
+				throw invalid_argument("received invalid string");
+			}
 
+			
+		}//while
+		this->RedrawWindow();
 
-	}
-	RedrawWindow();
-
+	}//else
 }
 
 void CWaveEditView::redo() {
+		int x = 0;
 	if (redoStack.empty())return;
 	//do all this again until figure out how to use same object across classes
 	CWaveEditDoc* pDoc = GetDocument();
 	ASSERT_VALID(pDoc);
 	if (!pDoc)return;
 	//put existing wave file into wave and fail check
-	WaveFile * wave = &pDoc->wave;
+	WaveFile * wave = pDoc->wave;
 	if (wave->hdr == NULL)return;
 	
 	//move redo action to undo stack;
 	undoStack.push(redoStack.top());
 	//get rid of redo action
-	string s = redoStack.top();
+	CWaveEditDoc::Command cmd = redoStack.top();
 	redoStack.pop();
-	if (s.find("cut") == 0) {
+	if (cmd.cmd == "cut") {
 		//parse out selection start/end
-		string start = s.substr(3, s.find("."));
-		string end = s.substr(s.find("." + start + "."), s.length());
-		this->selectionStart = stoi(start);
-		this->selectionEnd = stoi(end);
+		int start = cmd.cmdStart;
+		int end = cmd.cmdEnd;
+		this->selectionStart = start;
+		this->selectionEnd = end;
 		//do the action
 		CWaveEditView::OnEditCut();
 	}
-	else if (s.find("copy") == 0) {
+	else if (cmd.cmd == "copy") {
 		//parse out selection start/end
-		string start = s.substr(4, s.find("."));
-		string end = s.substr(s.find("." + start + "."), s.length());
-		this->selectionStart = stoi(start);
-		this->selectionEnd = stoi(end);
+		int start = cmd.cmdStart;
+		int end = cmd.cmdEnd;
+		this->selectionStart = start;
+		this->selectionEnd = end;
 		//do the action
 		CWaveEditView::OnEditCopy();
 	}
-	else if (s.find("paste") == 0) {
+	else if (cmd.cmd == "paste") {
 		//parse out selection start/end
-		string start = s.substr(5, s.find("."));
-		string end = s.substr(s.find("." + start + "."), s.length());
-		this->selectionStart = stoi(start);
-		this->selectionEnd = stoi(end);
+		int start = cmd.cmdStart;
+		int end = cmd.cmdEnd;
+		this->selectionStart = start;
+		this->selectionEnd = end;
 		//do the action
 		CWaveEditView::OnEditPaste();
 	}
-	else if (s.find("zoomin") == 0) {
+	else if (cmd.cmd == "zoomin") {
 		CWaveEditView::OnViewZoomin();
 	}
-	else if (s.find("zoomout") == 0) {
+	else if (cmd.cmd == "zoomout" ) {
 		CWaveEditView::OnViewZoomout();
 	}
-	else if (s.find("zoom100") == 0) {
+	else if (cmd.cmd == "zoom100") {
 		CWaveEditView::OnViewView100();
 	}
-	else if (s.find("slowdown") == 0) {
+	else if (cmd.cmd == "slowdown") {
 		WaveFile *slowWave = wave->multiply_freq(0.5, 0);
 		slowWave->play();
 		//modify current wave file
 		*wave = slowWave[0];
 	}
-	else if (s.find("speedup") == 0) {
+	else if (cmd.cmd == "speedup") {
 		WaveFile * speedWave = wave->multiply_freq(2, 0);
 		speedWave->play();
 		//modify current wave file
 		*wave = speedWave[0];
 	}
-	else if (s.find("echo") == 0) {
+	else if (cmd.cmd == "echo") {
 		//make new wav with echo
 		WaveFile * echoWave = wave->echo(0.5, 500);
 		//play it
@@ -607,7 +644,42 @@ void CWaveEditView::redo() {
 	RedrawWindow();
 }
 
+void CWaveEditView::OnToolsSlowdown()
+{
+	// TODO: Add your command handler code here
+	CWaveEditDoc* pDoc = GetDocument();
+	ASSERT_VALID(pDoc);
+	if (!pDoc)return;
+	//make a new wave pointer and set it to the wave just loaded then failcheck
+	WaveFile * wave = pDoc->wave;
+	if (wave->hdr == NULL)return;
+	WaveFile *slowWave;
+	int test = 0;
+	CSize size = GetTotalSize();
+	if (selectionEnd !=  selectionStart) { 
+		int start = wave->lastSample * (double)this->selectionStart / (double)size.cx;
+		int end = wave->lastSample * (double)this->selectionEnd / (double)size.cx;
+		addCommand("slowdownPart", start, end, wave);
+		slowWave = wave->multiply_freq(0.5, start, end); 
+		test = 1;
+	}
+	else {
+		addCommand("slowdown", 0, 0, wave);
+		slowWave = wave->multiply_freq(0.5, 0);
+		test = 2;
+	}
+	//slowWave->play();
+	//modify current wave file
+	slowWave->updateHeader();
+	pDoc->wave = slowWave;
+	this->RedrawWindow();
+	this->selectionStart = 0;
+	this->selectionEnd = 0;
+	//added from tutorial
+	//datanew[2i] = data[i]
+	//datanew[21+1] = data[i];
 
+}
 
 void CWaveEditView::OnToolsPlaybackwards()
 {
@@ -615,28 +687,23 @@ void CWaveEditView::OnToolsPlaybackwards()
 		CWaveEditDoc* pDoc = GetDocument();
 
 		ASSERT_VALID(pDoc);
-		if (!pDoc)
-			return;
+		if (!pDoc)return;
 
-		WaveFile * w2 = &pDoc->wave;
-
-		if (w2->hdr == NULL) {
-			return;
-		}
-
+		WaveFile * w2 = pDoc->wave;
+		if (w2->hdr == NULL)return;
+		//add properly formattedinfo inside struct to undo stack
+		addCommand("playBackwards", selectionStart, selectionEnd, w2);
 		// Get dimensions of the window.
 		CRect rect;
 		GetClientRect(rect);
-
-		int width = (w2->maxSamples / w2->sampleRate) * scale; //Samplerate * (pixSecond/framerate)
-
+		int width = (w2->maxSamples / w2->sampleRate) * scale; 
 		double startms = (1000.0 * w2->lastSample / w2->sampleRate) * this->selectionStart / width;
 		double endms = (1000.0 * w2->lastSample / w2->sampleRate) * this->selectionEnd / width;
 
 		if (startms == endms) {
 			w2 = w2->reverse();
 			w2->updateHeader();
-			pDoc->wave = *w2;
+			pDoc->wave = w2;
 		}
 		else {
 			WaveFile * edit = new WaveFile(w2->numChannels, w2->sampleRate, w2->bitsPerSample);
@@ -647,7 +714,7 @@ void CWaveEditView::OnToolsPlaybackwards()
 
 			w2 = w2->replace_fragment(startms, endms, edit);
 			w2->updateHeader();
-			pDoc->wave = *w2;
+			pDoc->wave = w2;
 		}
 
 		this->selectionStart = 0;
@@ -657,5 +724,193 @@ void CWaveEditView::OnToolsPlaybackwards()
 
 
 	
+
+}
+
+void CWaveEditView::OnToolsEcho()
+{
+	// TODO: Add your command handler code here
+	//get document(the file) and fail check
+	CWaveEditDoc* pDoc = GetDocument();
+	ASSERT_VALID(pDoc);
+	if (!pDoc)return;
+	//make a new wave pointer and set it to the wave just loaded then failcheck
+	WaveFile * wave = pDoc->wave;
+	if (wave->hdr == NULL)return;
+	//make new wav with echo
+	WaveFile * echoWave = wave->echo(0.5, 500);
+	//play it
+	//echoWave->play();
+	addCommand("echo", 0, 0, wave);
+	//modify current wave file
+	pDoc->wave = &echoWave[0];
+	(pDoc->wave)->updateHeader();
+	//added from tutorial
+	//datanew[i] = data[i] + atenuation * data[i - delay];
+
+}
+
+void CWaveEditView::OnToolsSpeedup()
+{/*
+	// TODO: Add your command handler code here
+	//get document(the file) and fail check
+	CWaveEditDoc* pDoc = GetDocument();
+	ASSERT_VALID(pDoc);
+	if (!pDoc)return;
+	//make a new wave pointer and set it to the wave just loaded then failcheck
+	WaveFile * wave = pDoc->wave;
+	if (wave->hdr == NULL)return;
+	WaveFile * speedWave = wave->multiply_freq(2, 0);
+	addCommand("speedup", 0, 0, wave);
+	//speedWave->play();
+	//modify current wave file
+	pDoc->wave = &speedWave[0];
+	(pDoc->wave)->updateHeader();
+	//added from tutorial
+	//datanew[i] = data[s*i];
+	*/
+	// TODO: Add your command handler code here
+	CWaveEditDoc* pDoc = GetDocument();
+	ASSERT_VALID(pDoc);
+	if (!pDoc)return;
+	//make a new wave pointer and set it to the wave just loaded then failcheck
+	WaveFile * wave = pDoc->wave;
+	if (wave->hdr == NULL)return;
+	WaveFile *slowWave;
+	int test = 0;
+	CSize size = GetTotalSize();
+	if (selectionEnd != selectionStart) {
+		int start = wave->lastSample * (double)this->selectionStart / (double)size.cx;
+		int end = wave->lastSample * (double)this->selectionEnd / (double)size.cx;
+		addCommand("speedupPart", start, end, wave);
+		slowWave = wave->multiply_freq(2, start, end);
+		test = 1;
+	}
+	else {
+		addCommand("speedup", 0, 0, wave);
+		slowWave = wave->multiply_freq(2, 0);
+		test = 2;
+	}
+	//slowWave->play();
+	//modify current wave file
+	slowWave->updateHeader();
+	pDoc->wave = slowWave;
+	this->RedrawWindow();
+	this->selectionStart = 0;
+	this->selectionEnd = 0;
+	//added from tutorial
+	//datanew[2i] = data[i]
+	//datanew[21+1] = data[i];
+
+}
+
+void CWaveEditView::OnToolsHyperspeed()
+{/*
+	// TODO: Add your command handler code here
+	// TODO: Add your command handler code here
+	//get document(the file) and fail check
+	CWaveEditDoc* pDoc = GetDocument();
+	ASSERT_VALID(pDoc);
+	if (!pDoc)return;
+	//make a new wave pointer and set it to the wave just loaded then failcheck
+	WaveFile * wave = pDoc->wave;
+	if (wave->hdr == NULL)return;
+	WaveFile * speedWave = wave->multiply_freq(2, 0);
+	addCommand("speedup", 0, 0, wave);
+	//speedWave->play();
+	//modify current wave file
+	pDoc->wave = &speedWave[0];
+	(pDoc->wave)->updateHeader();
+	//added from tutorial
+	//datanew[i] = data[s*i];
+	*/
+		// TODO: Add your command handler code here
+		CWaveEditDoc* pDoc = GetDocument();
+	ASSERT_VALID(pDoc);
+	if (!pDoc)return;
+	//make a new wave pointer and set it to the wave just loaded then failcheck
+	WaveFile * wave = pDoc->wave;
+	if (wave->hdr == NULL)return;
+	WaveFile *slowWave;
+	int test = 0;
+	CSize size = GetTotalSize();
+	if (selectionEnd != selectionStart) {
+		int start = wave->lastSample * (double)this->selectionStart / (double)size.cx;
+		int end = wave->lastSample * (double)this->selectionEnd / (double)size.cx;
+		addCommand("speedupPart", start, end, wave);
+		slowWave = wave->multiply_freq(8, start, end);
+		test = 1;
+	}
+	else {
+		addCommand("speedup", 0, 0, wave);
+		slowWave = wave->multiply_freq(8, 0);
+		test = 2;
+	}
+	//slowWave->play();
+	//modify current wave file
+	slowWave->updateHeader();
+	pDoc->wave = slowWave;
+	this->RedrawWindow();
+	this->selectionStart = 0;
+	this->selectionEnd = 0;
+	//added from tutorial
+	//datanew[2i] = data[i]
+	//datanew[21+1] = data[i];
+
+}
+
+
+void CWaveEditView::OnToolsTurtleslow()
+{/*
+	// TODO: Add your command handler code here
+	// TODO: Add your command handler code here
+	//get document(the file) and fail check
+	CWaveEditDoc* pDoc = GetDocument();
+	ASSERT_VALID(pDoc);
+	if (!pDoc)return;
+	//make a new wave pointer and set it to the wave just loaded then failcheck
+	WaveFile * wave = pDoc->wave;
+	if (wave->hdr == NULL)return;
+	WaveFile * speedWave = wave->multiply_freq(2, 0);
+	addCommand("speedup", 0, 0, wave);
+	//speedWave->play();
+	//modify current wave file
+	pDoc->wave = &speedWave[0];
+	(pDoc->wave)->updateHeader();
+	//added from tutorial
+	//datanew[i] = data[s*i];
+	*/
+		// TODO: Add your command handler code here
+		CWaveEditDoc* pDoc = GetDocument();
+	ASSERT_VALID(pDoc);
+	if (!pDoc)return;
+	//make a new wave pointer and set it to the wave just loaded then failcheck
+	WaveFile * wave = pDoc->wave;
+	if (wave->hdr == NULL)return;
+	WaveFile *slowWave;
+	int test = 0;
+	CSize size = GetTotalSize();
+	if (selectionEnd != selectionStart) {
+		int start = wave->lastSample * (double)this->selectionStart / (double)size.cx;
+		int end = wave->lastSample * (double)this->selectionEnd / (double)size.cx;
+		addCommand("speedupPart", start, end, wave);
+		slowWave = wave->multiply_freq(0.1, start, end);
+		test = 1;
+	}
+	else {
+		addCommand("speedup", 0, 0, wave);
+		slowWave = wave->multiply_freq(0.1, 0);
+		test = 2;
+	}
+	//slowWave->play();
+	//modify current wave file
+	slowWave->updateHeader();
+	pDoc->wave = slowWave;
+	this->RedrawWindow();
+	this->selectionStart = 0;
+	this->selectionEnd = 0;
+	//added from tutorial
+	//datanew[2i] = data[i]
+	//datanew[21+1] = data[i];
 
 }

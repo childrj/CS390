@@ -132,65 +132,68 @@ BEGIN
     END
 END
 
-IDR_WaveEditTYPE MENUEX
+IDR_WaveEditTYPE MENU
 BEGIN
-    POPUP "&File",                          65535,MFT_STRING,MFS_ENABLED
+    POPUP "&File"
     BEGIN
-        MENUITEM "&New\tCtrl+N",                ID_FILE_NEW,MFT_STRING,MFS_ENABLED
-        MENUITEM "&Open...\tCtrl+O",            ID_FILE_OPEN,MFT_STRING,MFS_ENABLED
-        MENUITEM "&Close",                      ID_FILE_CLOSE,MFT_STRING,MFS_ENABLED
-        MENUITEM "&Save\tCtrl+S",               ID_FILE_SAVE,MFT_STRING,MFS_ENABLED
-        MENUITEM "Save &As...",                 ID_FILE_SAVE_AS,MFT_STRING,MFS_ENABLED
-        MENUITEM MFT_SEPARATOR
-        MENUITEM "&Print...\tCtrl+P",           ID_FILE_PRINT,MFT_STRING,MFS_ENABLED
-        MENUITEM "Print Pre&view",              ID_FILE_PRINT_PREVIEW,MFT_STRING,MFS_ENABLED
-        MENUITEM "P&rint Setup...",             ID_FILE_PRINT_SETUP,MFT_STRING,MFS_ENABLED
-        MENUITEM MFT_SEPARATOR
-        MENUITEM "Recent File",                 ID_FILE_MRU_FILE1,MFT_STRING,MFS_ENABLED
-        MENUITEM MFT_SEPARATOR
-        MENUITEM "E&xit",                       ID_APP_EXIT,MFT_STRING,MFS_ENABLED
+        MENUITEM "&New\tCtrl+N",                ID_FILE_NEW
+        MENUITEM "&Open...\tCtrl+O",            ID_FILE_OPEN
+        MENUITEM "&Close",                      ID_FILE_CLOSE
+        MENUITEM "&Save\tCtrl+S",               ID_FILE_SAVE
+        MENUITEM "Save &As...",                 ID_FILE_SAVE_AS
+        MENUITEM SEPARATOR
+        MENUITEM "&Print...\tCtrl+P",           ID_FILE_PRINT
+        MENUITEM "Print Pre&view",              ID_FILE_PRINT_PREVIEW
+        MENUITEM "P&rint Setup...",             ID_FILE_PRINT_SETUP
+        MENUITEM SEPARATOR
+        MENUITEM "Recent File",                 ID_FILE_MRU_FILE1
+        MENUITEM SEPARATOR
+        MENUITEM "E&xit",                       ID_APP_EXIT
     END
-    POPUP "&Edit",                          65535,MFT_STRING,MFS_ENABLED
+    POPUP "&Edit"
     BEGIN
-        MENUITEM "&Redo\tCtrl+Shift+Z",         ID_EDIT_REDO,MFT_STRING,MFS_ENABLED
-        MENUITEM "&Undo\tCtrl+Z",               ID_EDIT_UNDO,MFT_STRING,MFS_ENABLED
-        MENUITEM MFT_SEPARATOR
-        MENUITEM "Cu&t\tCtrl+X",                ID_EDIT_CUT,MFT_STRING,MFS_ENABLED
-        MENUITEM "&Copy\tCtrl+C",               ID_EDIT_COPY,MFT_STRING,MFS_ENABLED
-        MENUITEM "&Paste\tCtrl+V",              ID_EDIT_PASTE,MFT_STRING,MFS_ENABLED
+        MENUITEM "&Redo\tCtrl+Shift+Z",         ID_EDIT_REDO
+        MENUITEM "&Undo\tCtrl+Z",               ID_EDIT_UNDO
+        MENUITEM SEPARATOR
+        MENUITEM "Cu&t\tCtrl+X",                ID_EDIT_CUT
+        MENUITEM "&Copy\tCtrl+C",               ID_EDIT_COPY
+        MENUITEM "&Paste\tCtrl+V",              ID_EDIT_PASTE
     END
-    POPUP "&View",                          65535,MFT_STRING,MFS_ENABLED
+    POPUP "&View"
     BEGIN
-        MENUITEM "&Toolbar",                    ID_VIEW_TOOLBAR,MFT_STRING,MFS_ENABLED
-        MENUITEM "&Status Bar",                 ID_VIEW_STATUS_BAR,MFT_STRING,MFS_ENABLED
-        POPUP "Zoom...",                        65535,MFT_STRING,MFS_GRAYED
+        MENUITEM "&Toolbar",                    ID_VIEW_TOOLBAR
+        MENUITEM "&Status Bar",                 ID_VIEW_STATUS_BAR
+        POPUP "Zoom...", INACTIVE
         BEGIN
-            MENUITEM "1x",                          ID_ZOOM_X1,MFT_STRING,MFS_ENABLED
-            MENUITEM "2x",                          ID_ZOOM_2X,MFT_STRING,MFS_ENABLED
-            MENUITEM "3x",                          ID_ZOOM_3X,MFT_STRING,MFS_ENABLED
+            MENUITEM "1x",                          ID_ZOOM_X1
+            MENUITEM "2x",                          ID_ZOOM_2X
+            MENUITEM "3x",                          ID_ZOOM_3X
         END
-        MENUITEM "Zoom In",                     ID_VIEW_ZOOMIN,MFT_STRING,MFS_ENABLED
-        MENUITEM "Zoom Out",                    ID_VIEW_ZOOMOUT,MFT_STRING,MFS_ENABLED
-        MENUITEM "View 100%",                   ID_VIEW_VIEW100,MFT_STRING,MFS_ENABLED
+        MENUITEM "Zoom In",                     ID_VIEW_ZOOMIN
+        MENUITEM "Zoom Out",                    ID_VIEW_ZOOMOUT
+        MENUITEM "View 100%",                   ID_VIEW_VIEW100
     END
-    POPUP "&Window",                        65535,MFT_STRING,MFS_ENABLED
+    POPUP "&Window"
     BEGIN
-        MENUITEM "&New Window",                 ID_WINDOW_NEW,MFT_STRING,MFS_ENABLED
-        MENUITEM "&Cascade",                    ID_WINDOW_CASCADE,MFT_STRING,MFS_ENABLED
-        MENUITEM "&Tile",                       ID_WINDOW_TILE_HORZ,MFT_STRING,MFS_ENABLED
-        MENUITEM "&Arrange Icons",              ID_WINDOW_ARRANGE,MFT_STRING,MFS_ENABLED
+        MENUITEM "&New Window",                 ID_WINDOW_NEW
+        MENUITEM "&Cascade",                    ID_WINDOW_CASCADE
+        MENUITEM "&Tile",                       ID_WINDOW_TILE_HORZ
+        MENUITEM "&Arrange Icons",              ID_WINDOW_ARRANGE
     END
-    POPUP "&Help",                          65535,MFT_STRING,MFS_ENABLED
+    POPUP "&Help"
     BEGIN
-        MENUITEM "&About WaveEdit...",          ID_APP_ABOUT,MFT_STRING,MFS_ENABLED
+        MENUITEM "&About WaveEdit...",          ID_APP_ABOUT
     END
-    POPUP "Tools",                          65535,MFT_STRING,MFS_ENABLED
+    POPUP "Tools"
     BEGIN
-        MENUITEM "&Play\tCtrl+9",               ID_TOOLS_PLAY,MFT_STRING,MFS_ENABLED
-        MENUITEM "&Speed Up\tCtrl++",           ID_TOOLS_SPEEDUP,MFT_STRING,MFS_ENABLED
-        MENUITEM "&Slow Down\tCtrl+-",          ID_TOOLS_SLOWDOWN,MFT_STRING,MFS_ENABLED
-        MENUITEM "&Echo\tCtrl+3",               ID_TOOLS_ECHO,MFT_STRING,MFS_ENABLED
-        MENUITEM "Play Backwards",              ID_TOOLS_PLAYBACKWARDS,MFT_STRING | MFT_RIGHTORDER,MFS_ENABLED
+        MENUITEM "&Play\tCtrl+9",               ID_TOOLS_PLAY
+        MENUITEM "&Speed Up\tCtrl++",           ID_TOOLS_SPEEDUP
+        MENUITEM "&Slow Down\tCtrl+-",          ID_TOOLS_SLOWDOWN
+        MENUITEM "&Echo\tCtrl+3",               ID_TOOLS_ECHO
+        MENUITEM "Play Backwards",              ID_TOOLS_PLAYBACKWARDS
+        MENUITEM "Stop",                        ID_TOOLS_STOP
+        MENUITEM "HyperSpeed",                  ID_TOOLS_HYPERSPEED
+        MENUITEM "Atari Sound",                 ID_TOOLS_TURTLESLOW
     END
 END
 

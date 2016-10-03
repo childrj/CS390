@@ -12,6 +12,8 @@
 // information about the wave file format.
 //
 // Version 1/24/2012 7:15am
+
+
 typedef struct WaveHeader {
 	unsigned char chunkID[4];          // big endian
 	unsigned char chunkSize[4];        // little endian
@@ -67,6 +69,7 @@ public:
 	void tone(int frequency, int msecs);
 	// Create a new wave file that is k times the frequency rate of the original up to durationms.
 	// If durationms==0 then use the whole wave file.
+	//WaveFile * multiply_freq(double k, double t,int durationms);
 	WaveFile * multiply_freq(double k, int durationms);
 	// Append a wave file src to the end of this wave file.
 	void append_wave(WaveFile * src);
@@ -86,4 +89,8 @@ public:
 	WaveFile * insert_fragment(int startMs, WaveFile * clipping);
 	WaveFile * reverse();
 	WaveFile * replace_fragment(int startMs, int endMs, WaveFile * clipping);
+	void stop();
+	//WaveFile *originalWave;
+	WaveFile *	WaveFile::multiply_freq(double k, int begin, int end);
+
 };

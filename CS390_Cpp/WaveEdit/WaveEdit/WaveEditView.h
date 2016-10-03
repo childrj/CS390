@@ -6,11 +6,13 @@
 #include <stack>
 #include <string>
 
+
 using namespace std;
 
 class CWaveEditView : public CScrollView //CView (changed for step #4)
 {
 	friend class CWaveEditDoc;
+	friend class WaveFile; 
 
 	bool mousePressed;
 	int selectionStart; // Selected sample start
@@ -19,20 +21,20 @@ class CWaveEditView : public CScrollView //CView (changed for step #4)
 	int count = 0;
 	int scale;
 public:
-	WaveFile* originalWave;
-
+	//WaveFile * originalWave;
+	void addCommand(string cmd, int cmdStart, int cmdEnd, WaveFile * waveSection);
 protected: // create from serialization only
 	CWaveEditView();
 	DECLARE_DYNCREATE(CWaveEditView)
-	stack<string> undoStack;
-	stack<string>redoStack;
-	void addCommand(string Command);
+	stack<CWaveEditDoc::Command> undoStack;
+	stack<CWaveEditDoc::Command>redoStack;
+	WaveFile * clip;
+	
 	string removeCommand(string Command);
 	void eraseStack();
 	void undo();
 	void redo();
-	void getpDC();
-
+	
 // Attributes
 public:
 	CWaveEditDoc* GetDocument() const;
@@ -70,7 +72,7 @@ public:
 	afx_msg void OnLButtonUp(UINT nFlags, CPoint point);
 	afx_msg void OnMouseMove(UINT nFlags, CPoint point);
 	afx_msg void OnEditCut();
-
+	afx_msg void OnToolsSlowdown();
 	afx_msg void OnEditPaste();
 	afx_msg void OnEditCopy();
 	afx_msg void OnZoomX1();
@@ -79,9 +81,11 @@ public:
 	afx_msg void OnViewZoomin();
 	afx_msg void OnViewZoomout();
 	afx_msg void OnViewView100();
-
-
+	afx_msg void OnToolsEcho();
+	afx_msg void OnToolsSpeedup();
 	afx_msg void OnToolsPlaybackwards();
+	afx_msg void OnToolsHyperspeed();
+	afx_msg void OnToolsTurtleslow();
 };
 
 #ifndef _DEBUG  // debug version in WaveEditView.cpp

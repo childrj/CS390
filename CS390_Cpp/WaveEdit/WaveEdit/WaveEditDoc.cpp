@@ -24,9 +24,7 @@ IMPLEMENT_DYNCREATE(CWaveEditDoc, CDocument)
 
 BEGIN_MESSAGE_MAP(CWaveEditDoc, CDocument)
 	ON_COMMAND(ID_TOOLS_PLAY, &CWaveEditDoc::OnToolsPlay)
-	ON_COMMAND(ID_TOOLS_ECHO, &CWaveEditDoc::OnToolsEcho)
-	ON_COMMAND(ID_TOOLS_SPEEDUP, &CWaveEditDoc::OnToolsSpeedup)
-	ON_COMMAND(ID_TOOLS_SLOWDOWN, &CWaveEditDoc::OnToolsSlowdown)
+	ON_COMMAND(ID_TOOLS_STOP, &CWaveEditDoc::OnToolsStop)
 END_MESSAGE_MAP()
 
 
@@ -35,11 +33,13 @@ END_MESSAGE_MAP()
 CWaveEditDoc::CWaveEditDoc()
 {
 	// TODO: add one-time construction code here
-	
+	wave = new WaveFile;
+
 }
 
 CWaveEditDoc::~CWaveEditDoc()
 {
+	delete wave;
 }
 
 BOOL CWaveEditDoc::OnNewDocument()
@@ -67,7 +67,7 @@ void CWaveEditDoc::Serialize(CArchive& ar)
 	else
 	{
 		// TODO: add loading code here
-		wave.read(ar.GetFile());
+		wave->read(ar.GetFile());
 		//wave.play();
 	}
 }
@@ -90,9 +90,9 @@ void CWaveEditDoc::OnDrawThumbnail(CDC& dc, LPRECT lprcBounds)
 	CFont fontDraw;
 	fontDraw.CreateFontIndirect(&lf);
 
-	CFont* pOldFont = dc.SelectObject(&fontDraw);
-	dc.DrawText(strText, lprcBounds, DT_CENTER | DT_WORDBREAK);
-	dc.SelectObject(pOldFont);
+CFont* pOldFont = dc.SelectObject(&fontDraw);
+dc.DrawText(strText, lprcBounds, DT_CENTER | DT_WORDBREAK);
+dc.SelectObject(pOldFont);
 }
 
 // Support for Search Handlers
@@ -138,7 +138,7 @@ void CWaveEditDoc::Dump(CDumpContext& dc) const
 {
 	CDocument::Dump(dc);
 }
-void CWaveEditDoc::SetView(CWaveEditView * view){
+void CWaveEditDoc::SetView(CWaveEditView * view) {
 	this->view = view;
 }
 #endif //_DEBUG
@@ -150,53 +150,11 @@ void CWaveEditDoc::SetView(CWaveEditView * view){
 void CWaveEditDoc::OnToolsPlay()
 {
 	// TODO: Add your command handler code here
-	wave.play();
+	wave->play();
 }
 
-
-void CWaveEditDoc::OnToolsEcho()
+void CWaveEditDoc::OnToolsStop()
 {
 	// TODO: Add your command handler code here
-
-	//make new wav with echo
-	WaveFile * echoWave = wave.echo(0.5, 500);
-	//play it
-	echoWave->play();
-	//modify current wave file
-	wave = echoWave[0];
-	
-	//added from tutorial
-	//datanew[i] = data[i] + atenuation * data[i - delay];
-	
-}
-
-
-void CWaveEditDoc::OnToolsSpeedup()
-{
-	// TODO: Add your command handler code here
-
-	WaveFile * speedWave = wave.multiply_freq(2, 0);
-	speedWave->play();
-	//modify current wave file
-	wave = speedWave[0];
-
-	//added from tutorial
-	//datanew[i] = data[s*i];
-	
-}
-
-
-void CWaveEditDoc::OnToolsSlowdown()
-{
-	// TODO: Add your command handler code here
-
-	WaveFile *slowWave = wave.multiply_freq(0.5, 0);
-	slowWave->play();
-	//modify current wave file
-	wave = slowWave[0];
-	
-	//added from tutorial
-	//datanew[2i] = data[i]
-	//datanew[21+1] = data[i];
-	
+	wave->stop();
 }

@@ -6,13 +6,21 @@
 #pragma once
 
 #include "WaveFile.h"
+#include <string>
 
 class CWaveEditDoc : public CDocument
 {
 	friend class CWaveEditView;
 	
-	WaveFile wave;
+	WaveFile *wave;
 	CWaveEditView *view;
+public:
+	struct Command {
+		std::string cmd;
+		int cmdStart;
+		int cmdEnd;
+		WaveFile * waveSection;
+	};
 
 protected: // create from serialization only
 	CWaveEditDoc();
@@ -54,7 +62,5 @@ protected:
 #endif // SHARED_HANDLERS
 public:
 	afx_msg void OnToolsPlay();
-	afx_msg void OnToolsEcho();
-	afx_msg void OnToolsSpeedup();
-	afx_msg void OnToolsSlowdown();
+	afx_msg void OnToolsStop();
 };
